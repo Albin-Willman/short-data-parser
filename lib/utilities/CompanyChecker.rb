@@ -15,6 +15,7 @@ class CompanyChecker
       unless historic_dates.include?(date)
         nn_data = fetch_nn_data(nn_id) if nn_id
         if nn_data[date]
+          puts "Filling #{date} with #{nn_data[date]}"
           fill_date(company, nn_data[date], date)
         else
           puts "No data for: #{date}"

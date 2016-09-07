@@ -30,7 +30,6 @@ namespace :fi do
   task :update_short_tracker, :date do |t, args|
     puts "Starting update"
     Rake::Task['fi:try_download'].invoke(args[:date])
-    puts "Starting"
     Rake::Task['fi:parse_xls'].invoke
     Rake::Task['fi:get_stock_data'].invoke
     Rake::Task['fi:upload_to_s3'].invoke
