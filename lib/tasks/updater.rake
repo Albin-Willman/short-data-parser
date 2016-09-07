@@ -44,8 +44,8 @@ namespace :fi do
   end
 
 
-  task :download => :environment do
-    date = Date.today
+  task :download, :date do |t, args|
+    date = valid_date?(args[:date]) ? args[:date] : Date.today
     data_path = Downloader.new.run(XLS_PATH, date.to_s)
   end
 
@@ -74,6 +74,16 @@ namespace :fi do
 
   task :upload_to_s3 => :environment do
     Uploader.new.run
+  end
+
+  def valid_date?(date)
+    return true if date.is_a? Date
+    begin
+      Date.parse(date)
+      return true
+    rescue
+      return false
+    end
   end
 
   def get_companies
