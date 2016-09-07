@@ -16,23 +16,23 @@ DATA_FILE_NAME = 'data.json'
 STOCKS_FOLDER = '/stocks'
 namespace :fi do
 
-  task :update_short_tracker_and_notify do
-    Rake::Task['fi:update_short_tracker'].invoke
+  task :update_short_tracker_and_notify, :date do |t, args|
+    Rake::Task['fi:update_short_tracker'].invoke(args[:date])
     `say "Updated short-tracker"`
   end
 
-  task :update_short_tracker => :environment do
-    Rake::Task['fi:try_download'].invoke
+  task :update_short_tracker, :date do |t, args|
+    Rake::Task['fi:try_download'].invoke(args[:date])
     Rake::Task['fi:parse_xls'].invoke
     Rake::Task['fi:get_stock_data'].invoke
-    Rake::Task['fi:upload_to_s3'].invoke
+    # Rake::Task['fi:upload_to_s3'].invoke
   end
 
-  task :try_download do
+  task :try_download, :date do |t, args|
     downloaded = false
     until downloaded do
       begin
-        Rake::Task['fi:download'].invoke
+        Rake::Task['fi:download'].invoke(args[:date])
         downloaded = true
       rescue
         puts 'Failed waiting 30 sec'
@@ -47,11 +47,9 @@ namespace :fi do
   task :download, :date do |t, args|
     date = valid_date?(args[:date]) ? args[:date] : Date.today
     data_path = Downloader.new.run(XLS_PATH, date.to_s)
-    puts `ls data/`
   end
 
   task :parse_xls => :environment do
-    puts `ls data/`
     FileUtils::mkdir_p DATA_PATH
     data = XlsParser.new.run(XLS_PATH)
     get_companies.each do |company, values|
