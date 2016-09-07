@@ -47,9 +47,11 @@ namespace :fi do
   task :download, :date do |t, args|
     date = valid_date?(args[:date]) ? args[:date] : Date.today
     data_path = Downloader.new.run(XLS_PATH, date.to_s)
+    puts `ls tmp/`
   end
 
   task :parse_xls => :environment do
+    puts `ls tmp/`
     FileUtils::mkdir_p DATA_PATH
     data = XlsParser.new.run(XLS_PATH)
     get_companies.each do |company, values|
