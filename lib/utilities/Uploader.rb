@@ -11,7 +11,7 @@ class Uploader
     Dir.chdir DIST_PATH do
       Dir.glob("api/**/*.*").each do |file|
         sha256 = Digest::SHA256.file(file).hexdigest
-        # next if shas[file] && shas[file] == sha256
+        next if shas[file] && shas[file] == sha256
         shas[file] = sha256
         puts "Deploying #{file}"
         upload_file(bucket, file)
