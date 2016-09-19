@@ -1,32 +1,44 @@
 class CompanyChecker
 
-  def check_company(company, data, file_path)
-    puts "**** #{company} ****"
+  def check_company(company)
+    puts "**** #{company.name} ****"
 
-    nn_id = data['nn_id']
+    nn_id = company.nn_id
     return unless nn_id && nn_id != '-'
 
-    relevant_dates = DateList.new.run(company, file_path)
-    relevant_dates.uniq!
-    historic_dates = fetch_historic_data(company)
+    first_date = company.positions.order('positions.date ASC').limit(1).first.date
+    historic_dates = company.stock_prices.map(&:date).map(&:to_s)
 
-    nn_data = {}
-    relevant_dates.each do |date|
-      unless historic_dates.include?(date)
-        nn_data = fetch_nn_data(nn_id) if nn_id
-        if nn_data[date]
-          puts "Filling #{date} with #{nn_data[date]}"
-          fill_date(company, nn_data[date], date)
+    nn_data = fetch_nn_data(nn_id, first_date)
+    previous = nil
+    (first_date..Date.yesterday).each do |date|
+      date_string = date.to_s
+      unless historic_dates.include?(date_string)
+        if nn_data[date_string]
+          puts "Filling #{date_string} with #{nn_data[date_string]}"
+          previous = StockPrice.create(
+              high: nn_data[date_string][:high],
+              low: nn_data[date_string][:low],
+              close: nn_data[date_string][:close],
+              date: date,
+              company: company
+            )
         else
-          puts "No data for: #{date}"
+          previous = StockPrice.create(
+              high: previous.high,
+              low: previous.low,
+              close: previous.close,
+              date: date,
+              company: company
+            ) if previous
         end
       end
     end
   end
 
-  def fetch_nn_data(nn_id)
+  def fetch_nn_data(nn_id, first_date)
     return {} unless nn_id && nn_id.length > 0
-    url = "https://www.nordnet.se/graph/instrument/11/#{nn_id}?from=2012-11-01&to=#{Date.today}&fields=last,high,low"
+    url = "https://www.nordnet.se/graph/instrument/11/#{nn_id}?from=#{first_date}&to=#{Date.today}&fields=last,high,low"
     begin
       historic_data = JSON.parse(open(url).read)
       return historic_data.inject({}) do |res, day_data|
@@ -38,37 +50,9 @@ class CompanyChecker
         }
         res
       end
-    rescue
-      puts 'exception'
-      return {}
+    # rescue
+    #   puts 'exception'
+    #   return {}
     end
-  end
-
-  def fill_date(company, date_data, date)
-    stock_path = build_stock_path(company)
-
-    data = get_old_stock_data(company)
-    data['history'][date.to_s] = {
-      high: date_data[:high].to_f,
-      low: date_data[:low].to_f
-    }
-    data['last'] = data[:close]
-    File.open(stock_path, "w") do |f|
-      f.write(data.to_json)
-    end
-  end
-
-  def get_old_stock_data(company)
-    stock_path = build_stock_path(company)
-    return {'history' => {}, 'last' => 0.0} unless Pathname.new(stock_path).exist?
-    JSON.parse(File.read(stock_path))
-  end
-
-  def build_stock_path(company)
-    "data/dist/api/stocks/#{company}.json"
-  end
-
-  def fetch_historic_data(company)
-    get_old_stock_data(company)['history'].keys
   end
 end

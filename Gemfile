@@ -6,8 +6,11 @@ gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
 gem 'simple-spreadsheet'
 gem 'aws-sdk'
 
+gem 'pg'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+  gem 'mysql2'
   gem 'byebug', platform: :mri
 end
 

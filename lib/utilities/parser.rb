@@ -4,9 +4,10 @@ require 'date'
 class XlsParser
   def run(file_path)
     @file_path = file_path
-    @result = {}
+    @companies = {}
+    @actors = {}
     parse_file
-    @result
+    @companies
   end
 
   private
@@ -29,11 +30,15 @@ class XlsParser
     amount = amount.tr(',', '.').to_f if amount.is_a?(String)
     amount = 0 if amount <= 0.5
     date = Date.parse(file.cell(line, 6).to_s)
-    company(company, company_name, date)
 
     actor_key = actor.split(" ").first.downcase
 
-    actor(company, actor_key, actor)[:positions][date.to_s] = amount
+    Position.find_or_create_by(
+      company: company(company, company_name),
+      actor: actor(actor_key, actor),
+      date: date,
+      value: amount
+    )
   end
 
   def find_company_key(company_name)
@@ -56,22 +61,16 @@ class XlsParser
     end
   end
 
-  def actor(company_key, actor_key, actor = nil)
-    company(company_key)[:actors][actor_key] = {
-      name: actor,
-      positions: {}
-    } unless company(company_key)[:actors][actor_key]
-    company(company_key)[:actors][actor_key]
+  def actor(key, actor = nil)
+    @actors[key] = Actor.find_by(key: key) unless @actors[key]
+    @actors[key] = Actor.create(key: key, name: actor) unless @actors[key]
+    @actors[key]
   end
 
-  def company(company_key, company_name = nil, date = nil)
-    @result[company_key] = {
-      name: company_name,
-      lastChange: date,
-      actors: {},
-    } unless @result[company_key]
-    @result[company_key][:lastChange] = date if date && @result[company_key][:lastChange] < date
-    @result[company_key]
+  def company(key, name = nil)
+    @companies[key] = Company.find_by(key: key) unless @companies[key]
+    @companies[key] = Company.create(key: key, name: name) unless @companies[key]
+    @companies[key]
   end
 
   def file

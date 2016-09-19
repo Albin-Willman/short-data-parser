@@ -112,6 +112,7 @@ GEM
     multi_json (1.12.1)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
+    mysql2 (0.4.4)
     nio4r (1.2.1)
     nokogiri (1.6.8)
       mini_portile2 (~> 2.1.0)
@@ -124,6 +125,7 @@ GEM
       multi_xml (~> 0.5)
       rack (>= 1.2, < 3)
     os (0.9.6)
+    pg (0.18.4)
     pkg-config (1.1.7)
     rack (2.0.1)
     rack-test (0.6.3)
@@ -205,6 +207,8 @@ DEPENDENCIES
   aws-sdk
   byebug
   listen (~> 3.0.5)
+  mysql2
+  pg
   rails (~> 5.0.0, >= 5.0.0.1)
   simple-spreadsheet
   spring

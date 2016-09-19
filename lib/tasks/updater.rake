@@ -7,8 +7,9 @@ require 'set'
 require_relative "../utilities/downloader.rb"
 require_relative "../utilities/Uploader.rb"
 require_relative "../utilities/parser.rb"
-require_relative "../utilities/DateList.rb"
+require_relative "../utilities/StockIndexBuilder.rb"
 require_relative "../utilities/CompanyChecker.rb"
+require_relative "../utilities/CompanyDataBuilder.rb"
 
 XLS_PATH = 'data/data.xls'
 DATA_PATH = 'data/dist/api/'
@@ -61,34 +62,29 @@ namespace :fi do
 
   task :parse_xls => :environment do
     puts 'Start parsing XLS'
-    FileUtils::mkdir_p DATA_PATH
-    data = XlsParser.new.run(XLS_PATH)
-    get_companies.each do |company, values|
-      next unless data[company]
-      data[company]['nn_id'] = values['nn_id']
-    end
-    File.open(data_file_path,"w") do |f|
-      f.write({
-        companies: data,
-        updated: Date.today.to_s
-      }.to_json)
-    end
+    XlsParser.new.run(XLS_PATH)
     puts 'Done parsing XLS'
   end
 
   task :get_stock_data => :environment do
     puts 'Start updating stock data'
-    FileUtils::mkdir_p DATA_PATH + STOCKS_FOLDER
     company_checker = CompanyChecker.new
-    get_companies.each do |company, data|
-      company_checker.check_company(company, data, data_file_path)
+    Company.all.each do |company|
+      company_checker.check_company(company)
     end
     puts 'Done updating stock data'
   end
 
   task :upload_to_s3 => :environment do
     puts 'Start updating s3'
-    Uploader.new.run
+    uploader = Uploader.new
+
+    uploader.run(StockIndexBuilder.new.run, 'api/v2/stocks.json')
+    company_data_builder = CompanyDataBuilder.new
+    Company.all.each do |c|
+      puts "Building #{c.name}"
+      uploader.run(company_data_builder.run(c), "api/v2/stocks/#{c.key}.json")
+    end
     puts 'Done updating s3'
   end
 
@@ -100,14 +96,5 @@ namespace :fi do
     rescue
       return false
     end
-  end
-
-  def get_companies
-    return { 'companies' => [] } unless File.file?(data_file_path)
-    JSON.parse(File.read(data_file_path))['companies']
-  end
-
-  def data_file_path
-    DATA_PATH + DATA_FILE_NAME
   end
 end
