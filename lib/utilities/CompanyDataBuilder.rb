@@ -10,7 +10,7 @@ class CompanyDataBuilder
   private
 
   def build_company_history(company)
-    prices = company.stock_prices.to_a
+    prices = company.stock_prices.order('date ASC').to_a
     return {} if prices.length == 0
     current = prices.shift
 
