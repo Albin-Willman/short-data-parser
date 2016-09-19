@@ -15,7 +15,7 @@ class CompanyDataBuilder
     current = prices.shift
 
     date_range(company).inject({}) do |s, e|
-      current = prices.shift if prices.first && prices.first.date >= e
+      current = prices.shift if prices.first && prices.first.date <= e
       s[e.to_s] = build_price_data(current)
       s
     end
