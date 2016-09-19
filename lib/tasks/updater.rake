@@ -11,10 +11,7 @@ require_relative "../utilities/StockIndexBuilder.rb"
 require_relative "../utilities/CompanyChecker.rb"
 require_relative "../utilities/CompanyDataBuilder.rb"
 
-XLS_PATH = 'data/data.xls'
-DATA_PATH = 'data/dist/api/'
-DATA_FILE_NAME = 'data.json'
-STOCKS_FOLDER = '/stocks'
+XLS_PATH = 'tmp/data.xls'
 namespace :fi do
 
   task :update_short_tracker_and_notify, :date do |t, args|
