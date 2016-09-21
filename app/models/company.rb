@@ -13,6 +13,10 @@ class Company < ApplicationRecord
     @last_change ||= find_last_change
   end
 
+  def last_registred_change
+    @last_registred_change ||= find_last_registred_change
+  end
+
   def change_30_days
     @change_30_days ||= compute_change_30_days
   end
@@ -33,6 +37,10 @@ class Company < ApplicationRecord
 
   def find_last_change
     positions.order('positions.date DESC').limit(1).first.date
+  end
+
+  def find_last_registred_change
+    positions.order('positions.date DESC').limit(1).first.created_at
   end
 
   def find_first_change
