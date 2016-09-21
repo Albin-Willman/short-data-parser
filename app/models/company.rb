@@ -1,7 +1,6 @@
 class Company < ApplicationRecord
   has_many :positions
   has_many :actors, through: :positions
-  has_many :stock_prices
   validates_presence_of :name, :key
   validates_uniqueness_of :key
 

@@ -1,6 +1,8 @@
 class CompanyDataBuilder
 
   def run(company)
+    return if !company.last_update.nil? && company.last_update >= company.last_change
+
     {
       history: build_company_history(company),
       positions: build_company_positions(company),
@@ -10,12 +12,13 @@ class CompanyDataBuilder
   private
 
   def build_company_history(company)
-    prices = company.stock_prices.order('date ASC').to_a
-    return {} if prices.length == 0
+
+    prices = fetch_nn_data(company.nn_id, company.first_position_date)
+    return {} if prices.nil? || prices.length == 0
     current = prices.shift
 
     date_range(company).inject({}) do |s, e|
-      current = prices.shift if prices.first && prices.first.date <= e
+      current = prices.shift if prices.first && prices.first[:date] <= e
       s[e.to_s] = build_price_data(current)
       s
     end
@@ -37,7 +40,7 @@ class CompanyDataBuilder
     current = Position.new(value: 0.0)
 
     date_range(company).inject({}) do |s, e|
-      if positions.first && positions.first.date <= e
+      if positions.first && positions.first[:date] <= e
         current = positions.shift
       end
       s[e.to_s] = current.value
@@ -51,9 +54,32 @@ class CompanyDataBuilder
 
   def build_price_data(sp)
     {
-      high: sp.high,
-      low: sp.low,
-      close: sp.close
+      high: sp[:high],
+      low: sp[:low],
+      close: sp[:close]
     }
+  end
+
+  def fetch_nn_data(nn_id, first_date)
+    return [] unless nn_id && nn_id != '-' && nn_id.length > 0
+    url = "https://www.nordnet.se/graph/instrument/11/#{nn_id}?from=#{first_date}&to=#{Date.today}&fields=last,high,low"
+    begin
+      historic_data = JSON.parse(open(url).read)
+      return historic_data.inject([]) do |res, day_data|
+        date = Time.at(day_data['time']/1000).to_date
+        res << {
+          high: day_data['high'],
+          low: day_data['low'],
+          close: day_data['last'],
+          date: date
+        }
+        res.sort_by do |item|
+          item[:date]
+        end
+      end
+    # rescue
+    #   puts 'exception'
+    #   return {}
+    end
   end
 end

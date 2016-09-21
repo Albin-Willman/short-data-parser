@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160909105112) do
+ActiveRecord::Schema.define(version: 20160921084828) do
 
   create_table "actors", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -23,8 +23,9 @@ ActiveRecord::Schema.define(version: 20160909105112) do
     t.string   "nn_id"
     t.string   "name"
     t.string   "key"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.date     "last_update"
   end
 
   create_table "positions", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -38,18 +39,6 @@ ActiveRecord::Schema.define(version: 20160909105112) do
     t.index ["company_id"], name: "index_positions_on_company_id", using: :btree
   end
 
-  create_table "stock_prices", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.float    "high",       limit: 24
-    t.float    "low",        limit: 24
-    t.float    "close",      limit: 24
-    t.date     "date"
-    t.integer  "company_id"
-    t.datetime "created_at",            null: false
-    t.datetime "updated_at",            null: false
-    t.index ["company_id"], name: "index_stock_prices_on_company_id", using: :btree
-  end
-
   add_foreign_key "positions", "actors"
   add_foreign_key "positions", "companies"
-  add_foreign_key "stock_prices", "companies"
 end
