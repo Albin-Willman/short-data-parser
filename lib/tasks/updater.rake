@@ -65,11 +65,11 @@ namespace :fi do
     puts 'Start updating s3'
     uploader = Uploader.new
 
-    uploader.run(StockIndexBuilder.new.run, 'tmp/api/v2/stocks.json')
+    uploader.run(StockIndexBuilder.new.run, 'api/v2/stocks.json')
     company_data_builder = CompanyDataBuilder.new
     Company.all.each do |c|
       puts "Building #{c.name}"
-      if uploader.run(company_data_builder.run(c), "tmp/api/v2/stocks/#{c.key}.json")
+      if uploader.run(company_data_builder.run(c), "api/v2/stocks/#{c.key}.json")
         c.last_update = Date.today
         c.save
       else
