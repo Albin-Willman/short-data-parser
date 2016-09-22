@@ -1,5 +1,6 @@
 class Actor < ApplicationRecord
   has_many :positions
+  has_many :companies, through: :positions
   validates_presence_of :name, :key
   validates_uniqueness_of :key
 
@@ -14,5 +15,27 @@ class Actor < ApplicationRecord
 
   def company_positions(company)
     positions.where(company_id: company.id)
+  end
+
+  def first_position_date
+    @first_position_date ||= find_first_change
+  end
+
+  def last_registred_change
+    @last_registred_change ||= find_last_registred_change
+  end
+
+  def uniq_companies
+    @uniq_companies ||= companies.distinct
+  end
+
+  private
+
+  def find_first_change
+    positions.order('positions.date ASC').limit(1).first.date
+  end
+
+  def find_last_registred_change
+    positions.order('positions.date DESC').limit(1).first.created_at
   end
 end

@@ -29,6 +29,10 @@ class Company < ApplicationRecord
     @first_position_date ||= find_first_change
   end
 
+  def actor_positions(actor)
+    positions.where(actor_id: actor.id)
+  end
+
   private
 
   def compute_total

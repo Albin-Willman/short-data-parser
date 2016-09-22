@@ -7,6 +7,7 @@ class Uploader
   def run(data, file_path)
     return unless data
     File.open(TMP_PATH, "w") do |f|
+    # File.open(file_path, "w") do |f|
       f.write(data.to_json)
     end
     upload_file(file_path)

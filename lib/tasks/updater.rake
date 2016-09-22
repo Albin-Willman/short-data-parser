@@ -8,9 +8,12 @@ require_relative "../utilities/downloader.rb"
 require_relative "../utilities/Uploader.rb"
 require_relative "../utilities/parser.rb"
 require_relative "../utilities/StockIndexBuilder.rb"
+require_relative "../utilities/ActorIndexBuilder.rb"
 require_relative "../utilities/CompanyDataBuilder.rb"
+require_relative "../utilities/ActorDataBuilder.rb"
 
 XLS_PATH = 'tmp/data.xls'
+API_PATH = 'tmp/api/v2'
 namespace :fi do
 
   task :update_short_tracker_and_notify, :date do |t, args|
@@ -65,18 +68,38 @@ namespace :fi do
     puts 'Start updating s3'
     uploader = Uploader.new
 
-    uploader.run(StockIndexBuilder.new.run, 'api/v2/stocks.json')
+    uploader.run(StockIndexBuilder.new.run, "#{API_PATH}/stocks.json")
+    upload_companies(uploader)
+    uploader.run(ActorIndexBuilder.new.run, "#{API_PATH}/actors.json")
+    upload_actors(uploader)
+
+    puts 'Done updating s3'
+  end
+
+  def upload_companies(uploader)
     company_data_builder = CompanyDataBuilder.new
     Company.all.each do |c|
       puts "Building #{c.name}"
-      if uploader.run(company_data_builder.run(c), "api/v2/stocks/#{c.key}.json")
+      if uploader.run(company_data_builder.run(c), "#{API_PATH}/stocks/#{c.key}.json")
         c.last_update = Date.today
         c.save
       else
         puts 'No update'
       end
     end
-    puts 'Done updating s3'
+  end
+
+  def upload_actors(uploader)
+    company_data_builder = ActorDataBuilder.new
+    Actor.all.each do |a|
+      puts "Building actor: #{a.name}"
+      if uploader.run(company_data_builder.run(a), "#{API_PATH}/actors/#{a.key}.json")
+        a.last_update = Date.today
+        a.save
+      else
+        puts 'No update'
+      end
+    end
   end
 
   def valid_date?(date)
