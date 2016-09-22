@@ -13,7 +13,7 @@ require_relative "../utilities/CompanyDataBuilder.rb"
 require_relative "../utilities/ActorDataBuilder.rb"
 
 XLS_PATH = 'tmp/data.xls'
-API_PATH = 'tmp/api/v2'
+API_PATH = 'api/v2'
 namespace :fi do
 
   task :update_short_tracker_and_notify, :date do |t, args|
