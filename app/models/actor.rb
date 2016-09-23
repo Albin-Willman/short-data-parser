@@ -25,11 +25,19 @@ class Actor < ApplicationRecord
     @last_registred_change ||= find_last_registred_change
   end
 
+  def last_change
+    @last_change ||= find_last_change
+  end
+
   def uniq_companies
     @uniq_companies ||= companies.distinct
   end
 
   private
+
+  def find_last_change
+    positions.order('positions.date DESC').limit(1).first.date
+  end
 
   def find_first_change
     positions.order('positions.date ASC').limit(1).first.date

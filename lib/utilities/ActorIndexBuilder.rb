@@ -9,8 +9,9 @@ class ActorIndexBuilder
   def build_actor_data(list, actor)
     list << {
       name: actor.name,
+      key: actor.key,
       noOfActivePositions: count_active_investments(actor),
-      lastChange: actor.last_registred_change
+      lastChange: actor.last_change
     }
     list
   end
