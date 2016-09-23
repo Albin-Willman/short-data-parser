@@ -23,8 +23,11 @@ namespace :fi do
 
   task :intelligent_updater, :date do |t, args|
     date = valid_date?(args[:date]) ? Date.parse(args[:date]) : Date.today
-    return if date.saturday? || date.sunday?
-    Rake::Task['fi:update_short_tracker'].invoke(date)
+    unless date.saturday? || date.sunday?
+      Rake::Task['fi:update_short_tracker'].invoke(date)
+    else
+      puts '*** Skipping due to weekend ***'
+    end
   end
 
   task :update_short_tracker, :date do |t, args|
