@@ -1,8 +1,11 @@
 class ActorDataBuilder
   def run(actor)
-    return if !actor.last_update.nil? && actor.last_update > actor.last_registred_change
-
-    { positions: build_actor_positions(actor) }
+    return if !actor.last_update.nil? && actor.last_update > actor.last_registred_changei
+    {
+      name: actor.name,
+      key: actor.key,
+      positions: build_actor_positions(actor)
+    }
   end
 
   private
