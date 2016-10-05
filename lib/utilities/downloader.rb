@@ -1,17 +1,28 @@
 require 'open-uri'
 require "net/http"
+
+POSSIBLE_FILES = [
+  ['', 'xls'],
+  ['_NY', 'xls'],
+  ['', 'xlsx'],
+  ['_NY', 'xlsx']
+]
+
 class Downloader
 
-  def run(file_path, date)
-    url = build_url(date)
-    unless valid_url?(url)
-      url = build_url(date + '_NY')
-      raise 'No file to download' unless valid_url?(url)
+  def run(file_base, date)
+    POSSIBLE_FILES.each do |opts|
+      url = build_url(date + opts[0], opts[1])
+      puts url
+      if valid_url?(url)
+        file_path = "#{file_base}.#{opts[1]}"
+        open(file_path, 'wb') do |file|
+          file << open(url).read
+        end
+        return file_path
+      end
     end
-    open(file_path, 'wb') do |file|
-      file << open(build_url(date)).read
-    end
-    file_path
+    raise 'No file to download'
   end
 
   private
@@ -23,8 +34,8 @@ class Downloader
     res.code == "200"
   end
 
-  def build_url(date)
-    "http://www.fi.se/upload/50_Marknadsinfo/Blankning/Korta_positioner_#{date}.xls"
+  def build_url(date, file_ending)
+    "http://www.fi.se/upload/50_Marknadsinfo/Blankning/Korta_positioner_#{date}.#{file_ending}"
   end
 end
 

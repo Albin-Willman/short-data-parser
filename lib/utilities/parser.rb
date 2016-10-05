@@ -2,15 +2,22 @@ require "simple-spreadsheet"
 require 'date'
 
 class XlsParser
+
+  POSSIBLE_FORMATS = ['xls', 'xlsx']
   def run(file_path)
     @file_path = file_path
     @companies = {}
     @actors = {}
     parse_file
+    delete_file
     @companies
   end
 
   private
+
+  def delete_file
+    FileUtils.rm(@file_path)
+  end
 
   def parse_file
     file.first_row.upto(file.last_row) do |line|
@@ -74,7 +81,17 @@ class XlsParser
   end
 
   def file
-    @file ||= SimpleSpreadsheet::Workbook.read(@file_path)
+    @file ||= read_file
+  end
+
+  def read_file
+    POSSIBLE_FORMATS.each do |form|
+      complete_path = "#{@file_path}.#{form}"
+      next unless File.file?(complete_path)
+      @file_path = complete_path
+      return SimpleSpreadsheet::Workbook.read(@file_path)
+    end
+    throw "No file to parse"
   end
 
   def valid_date?(date)

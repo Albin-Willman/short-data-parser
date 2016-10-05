@@ -12,7 +12,7 @@ require_relative "../utilities/ActorIndexBuilder.rb"
 require_relative "../utilities/CompanyDataBuilder.rb"
 require_relative "../utilities/ActorDataBuilder.rb"
 
-XLS_PATH = 'tmp/data.xls'
+XLS_PATH = 'tmp/data'
 API_PATH = 'api/v2'
 namespace :fi do
 
