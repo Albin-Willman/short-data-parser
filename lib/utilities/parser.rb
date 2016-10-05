@@ -29,8 +29,7 @@ class XlsParser
     amount = file.cell(line, 5)
     amount = amount.tr(',', '.').to_f if amount.is_a?(String)
     amount = 0 if amount < 0.5
-    date =  Date.today
-    date = Date.parse(file.cell(line, 6).to_s) if valid_date?(file.cell(line, 6))
+    date = Date.parse(file.cell(line, 6).to_s)
 
     actor_key = actor.split(" ").first.downcase
 
