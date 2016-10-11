@@ -4,8 +4,10 @@ require "net/http"
 POSSIBLE_FILES = [
   ['', 'xls'],
   ['_NY', 'xls'],
+  ['test', 'xls'],
   ['', 'xlsx'],
-  ['_NY', 'xlsx']
+  ['_NY', 'xlsx'],
+  ['test', 'xlsx']
 ]
 
 class Downloader
