@@ -1,9 +1,9 @@
 class Company < ApplicationRecord
   has_many :positions
+  has_many :blog_posts
   has_many :actors, through: :positions
   validates_presence_of :name, :key
   validates_uniqueness_of :key
-
 
   def total
     @total ||= compute_total

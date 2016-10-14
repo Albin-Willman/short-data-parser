@@ -51,6 +51,8 @@ class XlsParser
   def find_company_key(company_name)
     company = company_name.split(" ").first.downcase
     case company
+    when 'telefonaktiebolaget'
+      return 'ericsson'
     when 'swedish'
       return company + company_name.split(" ")[1].downcase
     when 'h'
