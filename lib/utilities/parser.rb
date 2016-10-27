@@ -21,14 +21,15 @@ class XlsParser
 
   def parse_file
     file.first_row.upto(file.last_row) do |line|
-      parse_line(line)
+      return unless parse_line(line)
     end
   end
 
   def parse_line(line)
-    return unless valid_date?(file.cell(line, 1))
+    return true unless valid_date?(file.cell(line, 1))
     actor = file.cell(line, 2)
-    return if !actor || actor.gsub(/[^0-9a-z]/i, '') == 'IngapublikapositionerpubliceradesNopublicpositionswerepublished'
+    return true if !actor || actor.gsub(/[^0-9a-z]/i, '') == 'IngapublikapositionerpubliceradesNopublicpositionswerepublished'
+    return false if Position.find_by(line_hash: line_hash(line))
     company_name = file.cell(line, 3)
 
     company = find_company_key(company_name)
@@ -40,12 +41,25 @@ class XlsParser
 
     actor_key = actor.split(" ").first.downcase
 
-    Position.find_or_create_by(
+    Position.create(
       company: company(company, company_name),
       actor: actor(actor_key, actor),
       date: date,
-      value: amount
+      value: amount,
+      line_hash: line_hash(line)
     )
+    true
+  end
+
+  def line_hash(line)
+    "
+      #{file.cell(line, 1)}
+      #{file.cell(line, 2)}
+      #{file.cell(line, 3)}
+      #{file.cell(line, 4)}
+      #{file.cell(line, 5)}
+      #{file.cell(line, 6)}
+    ".gsub(/[^0-9a-z]/i, '')
   end
 
   def find_company_key(company_name)

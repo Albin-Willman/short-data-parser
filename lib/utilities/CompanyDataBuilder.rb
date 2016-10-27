@@ -1,8 +1,7 @@
 class CompanyDataBuilder
 
   def run(company)
-    return if !company.last_update.nil? && company.last_update > company.last_registred_change
-
+    return unless company.positions.any?
     {
       history: build_company_history(company),
       positions: build_company_positions(company),

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161013125538) do
+ActiveRecord::Schema.define(version: 20161022133620) do
 
   create_table "actors", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string   "name"
@@ -45,8 +45,18 @@ ActiveRecord::Schema.define(version: 20161013125538) do
     t.integer  "actor_id"
     t.datetime "created_at",            null: false
     t.datetime "updated_at",            null: false
+    t.string   "line_hash"
     t.index ["actor_id"], name: "index_positions_on_actor_id", using: :btree
     t.index ["company_id"], name: "index_positions_on_company_id", using: :btree
+    t.index ["line_hash"], name: "index_positions_on_line_hash", using: :btree
+  end
+
+  create_table "system_events", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.string   "title"
+    t.integer  "event_type"
+    t.string   "data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "blog_posts", "companies"

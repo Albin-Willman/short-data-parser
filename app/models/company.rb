@@ -40,15 +40,15 @@ class Company < ApplicationRecord
   end
 
   def find_last_change
-    positions.order('positions.date DESC').limit(1).first.date
+    positions.order('positions.date DESC').limit(1).first.try(:date)
   end
 
   def find_last_registred_change
-    positions.order('positions.date DESC').limit(1).first.created_at
+    positions.order('positions.date DESC').limit(1).first.try(:created_at)
   end
 
   def find_first_change
-    positions.order('positions.date ASC').limit(1).first.date
+    positions.order('positions.date ASC').limit(1).first.try(:date)
   end
 
   def compute_change_30_days

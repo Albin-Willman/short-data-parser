@@ -3,6 +3,7 @@ require 'json'
 require 'fileutils'
 require 'pathname'
 require 'set'
+require 'benchmark'
 
 require_relative "../utilities/downloader.rb"
 require_relative "../utilities/Uploader.rb"
@@ -70,38 +71,63 @@ namespace :fi do
   task :upload_to_s3 => :environment do
     puts 'Start updating s3'
     uploader = Uploader.new
+    last_deploy = SystemEvent.last.try(:created_at)
+    relevant_positions = Position.where("created_at > ?", last_deploy)
+    relevant_posts = BlogPost.where("created_at > ?", last_deploy)
 
     uploader.run(StockIndexBuilder.new.run, "#{API_PATH}/stocks.json")
-    upload_companies(uploader)
+    upload_companies(uploader, relevant_positions, relevant_posts)
     uploader.run(ActorIndexBuilder.new.run, "#{API_PATH}/actors.json")
-    upload_actors(uploader)
-
+    upload_actors(uploader, relevant_positions)
+    SystemEvent.new
     puts 'Done updating s3'
   end
 
-  def upload_companies(uploader)
-    company_data_builder = CompanyDataBuilder.new
-    Company.all.each do |c|
-      puts "Building #{c.name}"
-      if uploader.run(company_data_builder.run(c), "#{API_PATH}/stocks/#{c.key}.json")
-        c.last_update = Date.today
-        c.save
-      else
-        puts 'No update'
+  task :benchmark_parse => :environment do
+    Benchmark.bm do |x|
+      x.report('Parser') do
+        XlsParser.new.run(XLS_PATH)
       end
     end
   end
 
-  def upload_actors(uploader)
-    company_data_builder = ActorDataBuilder.new
-    Actor.all.each do |a|
-      puts "Building actor: #{a.name}"
-      if uploader.run(company_data_builder.run(a), "#{API_PATH}/actors/#{a.key}.json")
-        a.last_update = Date.today
-        a.save
-      else
-        puts 'No update'
+  task :benchmark_update => :environment do
+    uploader = Uploader.new
+    last_deploy = SystemEvent.last.try(:created_at)
+    relevant_positions = Position.where("created_at > ?", last_deploy)
+    relevant_posts = BlogPost.where("created_at > ?", last_deploy)
+
+    Benchmark.bm do |x|
+      x.report('StockIndexBuilder') do
+        uploader.run(StockIndexBuilder.new.run, "#{API_PATH}/stocks.json")
       end
+      x.report('upload_companies') do
+        upload_companies(uploader, relevant_positions, relevant_posts)
+      end
+      x.report('ActorIndexBuilder') do
+        uploader.run(ActorIndexBuilder.new.run, "#{API_PATH}/actors.json")
+      end
+      x.report('upload_actors') do
+        upload_actors(uploader, relevant_positions)
+      end
+    end
+  end
+
+  def upload_companies(uploader, relevant_positions, relevant_posts)
+    company_data_builder = CompanyDataBuilder.new
+    company_ids = relevant_positions.map(&:company_id) + relevant_posts.map(&:company_id)
+    Company.where(id: company_ids).includes(:positions).each do |c|
+      puts "Building #{c.name}"
+      uploader.run(company_data_builder.run(c), "#{API_PATH}/stocks/#{c.key}.json")
+    end
+  end
+
+  def upload_actors(uploader, relevant_positions)
+    actor_data_builder = ActorDataBuilder.new
+    actor_ids = relevant_positions.map(&:actor_id)
+    Actor.where(id: actor_ids).includes(:positions).each do |a|
+      puts "Building actor: #{a.name}"
+      uploader.run(actor_data_builder.run(a), "#{API_PATH}/actors/#{a.key}.json")
     end
   end
 
@@ -113,5 +139,10 @@ namespace :fi do
     rescue
       return false
     end
+  end
+end
+
+class DummyUploader
+  def run(_data, _file)
   end
 end
