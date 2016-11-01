@@ -8,6 +8,7 @@ class XlsParser
     @file_path = file_path
     @companies = {}
     @actors = {}
+    @found_lines = 0
     parse_file
     delete_file
     @companies
@@ -21,7 +22,8 @@ class XlsParser
 
   def parse_file
     file.first_row.upto(file.last_row) do |line|
-      return unless parse_line(line)
+      parse_line(line)
+      return if @found_lines > 9
     end
   end
 
@@ -29,7 +31,10 @@ class XlsParser
     return true unless valid_date?(file.cell(line, 1))
     actor = file.cell(line, 2)
     return true if !actor || actor.gsub(/[^0-9a-z]/i, '') == 'IngapublikapositionerpubliceradesNopublicpositionswerepublished'
-    return false if Position.find_by(line_hash: line_hash(line))
+    if Position.find_by(line_hash: line_hash(line))
+      @found_lines += 1
+      return
+    end
     company_name = file.cell(line, 3)
 
     company = find_company_key(company_name)

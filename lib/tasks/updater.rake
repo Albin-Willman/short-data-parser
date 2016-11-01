@@ -79,7 +79,9 @@ namespace :fi do
     upload_companies(uploader, relevant_positions, relevant_posts)
     uploader.run(ActorIndexBuilder.new.run, "#{API_PATH}/actors.json")
     upload_actors(uploader, relevant_positions)
-    SystemEvent.new
+    deploy = SystemEvent.new
+    deploy.deploy!
+    deploy.save!
     puts 'Done updating s3'
   end
 

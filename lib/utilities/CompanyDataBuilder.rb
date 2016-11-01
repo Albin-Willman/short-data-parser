@@ -76,9 +76,9 @@ class CompanyDataBuilder
           item[:date]
         end
       end
-    # rescue
-    #   puts 'exception'
-    #   return {}
+      rescue
+        puts url
+        return []
     end
   end
 end
