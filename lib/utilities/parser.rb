@@ -84,6 +84,8 @@ class XlsParser
       return 'granges'
     when 'alfa'
       return 'alfa-laval'
+    when 'fingerprints'
+      return 'fingerprint'
     else
       return company
     end
