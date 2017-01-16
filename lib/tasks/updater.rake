@@ -70,7 +70,7 @@ namespace :fi do
     puts 'Downloaded'
   end
 
-  task :parse_xls, :full do |t, args|
+  task :parse_xls, [:full] => [:environment] do |t, args|
     puts 'Start parsing XLS'
     XlsParser.new.run(XLS_PATH, !args[:full])
     puts 'Done parsing XLS'
