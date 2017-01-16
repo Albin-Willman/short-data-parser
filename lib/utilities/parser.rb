@@ -4,12 +4,12 @@ require 'date'
 class XlsParser
 
   POSSIBLE_FORMATS = ['xls', 'xlsx']
-  def run(file_path, = false)
+  def run(file_path, fast = true)
     @file_path = file_path
     @companies = {}
     @actors = {}
     @found_lines = 0
-     =
+    @fast = fast
     parse_file
     delete_file
     @companies
