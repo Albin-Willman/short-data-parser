@@ -20,7 +20,7 @@ class Uploader
   #     f.write(data.to_json)
   #   end
   #   true
-  end
+  # end
 
   def bucket
     return @bucket if @bucket
