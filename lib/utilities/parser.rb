@@ -4,11 +4,12 @@ require 'date'
 class XlsParser
 
   POSSIBLE_FORMATS = ['xls', 'xlsx']
-  def run(file_path)
+  def run(file_path, = false)
     @file_path = file_path
     @companies = {}
     @actors = {}
     @found_lines = 0
+     =
     parse_file
     delete_file
     @companies
@@ -23,7 +24,7 @@ class XlsParser
   def parse_file
     file.first_row.upto(file.last_row) do |line|
       parse_line(line)
-      return if @found_lines > 9
+      return if @fast && @found_lines > 9
     end
   end
 

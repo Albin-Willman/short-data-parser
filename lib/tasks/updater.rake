@@ -39,6 +39,14 @@ namespace :fi do
     puts 'Update completed'
   end
 
+  task :update_short_tracker_full, :date do |t, args|
+    puts "Starting update"
+    Rake::Task['fi:try_download'].invoke(args[:date])
+    Rake::Task['fi:parse_xls'].invoke(true)
+    Rake::Task['fi:upload_to_s3'].invoke
+    puts 'Update completed'
+  end
+
   task :try_download, :date do |t, args|
     downloaded = false
     until downloaded do
@@ -62,9 +70,9 @@ namespace :fi do
     puts 'Downloaded'
   end
 
-  task :parse_xls => :environment do
+  task :parse_xls => :environment, :full do |t, args|
     puts 'Start parsing XLS'
-    XlsParser.new.run(XLS_PATH)
+    XlsParser.new.run(XLS_PATH, !args[:full])
     puts 'Done parsing XLS'
   end
 
