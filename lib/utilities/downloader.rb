@@ -2,42 +2,44 @@ require 'open-uri'
 require "net/http"
 
 POSSIBLE_FILES = [
-  ['', 'xls'],
-  ['_NY', 'xls'],
-  ['test', 'xls'],
-  ['', 'xlsx'],
-  ['_NY', 'xlsx'],
-  ['test', 'xlsx']
+  'xlsx',
+  'xls'
 ]
+
+BASE_URL = 'http://fi.se';
 
 class Downloader
 
   def run(file_base, date)
-    POSSIBLE_FILES.each do |opts|
-      url = build_url(date + opts[0], opts[1])
+    url = find_url(date)
+    POSSIBLE_FILES.each do |ending|
       puts url
-      if valid_url?(url)
-        file_path = "#{file_base}.#{opts[1]}"
-        open(file_path, 'wb') do |file|
-          file << open(url).read
-        end
-        return file_path
+      next unless valid_url?(url, ending)
+
+      file_path = "#{file_base}.#{ending}"
+      open(file_path, 'wb') do |file|
+        file << open(url).read
       end
+      return file_path
     end
     raise 'No file to download'
   end
 
   private
 
-  def valid_url?(url)
-    uri = URI.parse(url)
-    req = Net::HTTP.new(uri.host, uri.port)
-    res = req.request_head(uri.path)
-    res.code == "200"
+  def find_url(date)
+    link = Nokogiri::HTML(open("#{BASE_URL}/sv/vara-register/blankning/")).at(link_text(date))
+    return unless link
+    BASE_URL + link['href']
   end
 
-  def build_url(date, file_ending)
-    "http://www.fi.se/upload/50_Marknadsinfo/Blankning/Korta_positioner_#{date}.#{file_ending}"
+  def link_text(date)
+    "a:contains(\"Publicerade blankningar #{date} (i excel-format)\")"
+  end
+
+  def valid_url?(url, ending)
+    return false unless url
+    url.end_with?(ending)
   end
 end
 
