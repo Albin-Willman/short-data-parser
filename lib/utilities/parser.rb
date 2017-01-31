@@ -89,6 +89,10 @@ class XlsParser
       return 'alfa-laval'
     when 'fingerprints'
       return 'fingerprint'
+    when 'telia'
+      return 'teliasonera'
+    when 'dios'
+      return 'diös'
     else
       return company
     end
