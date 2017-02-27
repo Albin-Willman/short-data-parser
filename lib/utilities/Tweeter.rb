@@ -9,15 +9,21 @@ class Tweeter
   end
 
   def self.send_summary(companies)
-    client.update(summary_tweet_text(companies))
+    tickers = fetch_tickers(companies)
+    client.update(summary_tweet_text(tickers))
   end
 
   def self.send_test_tweet
     client.update('Test tweet')
   end
 
-  def self.summary_tweet_text(companies)
-    "Todays short changes: #{companies.map(&:ticker).reject(&:blank?).map {|t| "$#{t}"}.join(', ')} http://kortapositioner.se/stocks #blankning"
+  def self.fetch_tickers(companies)
+    companies.map(&:ticker).reject(&:blank?).map {|t| "$#{t}"}
+  end
+
+  def self.summary_tweet_text(tickers)
+    return "Todays short changes: #{tickers.join(', ')} http://kortapositioner.se/stocks #blankning"  if tickers.length > 0
+    'No changes in todays update. http://kortapositioner.se/stocks #blankning'
   end
 
   def self.company_tweet_text(company)
