@@ -5,6 +5,8 @@ source 'https://rubygems.org'
 gem 'rails', '~> 5.0.0', '>= 5.0.0.1'
 gem 'simple-spreadsheet'
 gem 'aws-sdk'
+gem 'googlecharts'
+gem 'twitter'
 
 gem 'pg'
 gem 'nokogiri'

@@ -1,0 +1,39 @@
+require 'twitter'
+require_relative "../utilities/ChartGenerator.rb"
+
+class Tweeter
+  def self.send_tweet(company, data)
+    file_name = ChartGenerator.build_company_chart(data)
+
+    client.update_with_media(company_tweet_text(company), File.new(file_name))
+  end
+
+  def self.send_summary(companies)
+    client.update(summary_tweet_text(companies))
+  end
+
+  def self.send_test_tweet
+    client.update('Test tweet')
+  end
+
+  def self.summary_tweet_text(companies)
+    "Todays short changes: #{companies.map(&:ticker).reject(&:blank?).map {|t| "$#{t}"}.join(', ')} http://kortapositioner.se/stocks #blankning"
+  end
+
+  def self.company_tweet_text(company)
+    "Changes in #{ticker(company)}. Total short: #{company.total}\% http://kortapositioner.se/stock/#{company.key} #blankning#{company.ticker ? " \##{company.ticker}" : ''}"
+  end
+
+  def self.ticker(company)
+    company.ticker ? "$#{company.ticker.upcase}" : company.name.strip
+  end
+
+  def self.client
+    Twitter::REST::Client.new do |config|
+      config.consumer_key        = ENV["TWITTER_CONSUMER_KEY"]
+      config.consumer_secret     = ENV["TWITTER_CONSUMER_SECRET"]
+      config.access_token        = ENV["TWITTER_ACCESS_TOKEN"]
+      config.access_token_secret = ENV["TWITTER_ACCESS_TOKEN_SECRET"]
+    end
+  end
+end

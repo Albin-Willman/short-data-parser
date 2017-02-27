@@ -12,6 +12,8 @@ require_relative "../utilities/StockIndexBuilder.rb"
 require_relative "../utilities/ActorIndexBuilder.rb"
 require_relative "../utilities/CompanyDataBuilder.rb"
 require_relative "../utilities/ActorDataBuilder.rb"
+require_relative "../utilities/ChartGenerator.rb"
+require_relative "../utilities/Tweeter.rb"
 
 XLS_PATH = 'tmp/data'
 API_PATH = 'api/v2'
@@ -29,6 +31,15 @@ namespace :fi do
     else
       puts '*** Skipping due to weekend ***'
     end
+  end
+
+  task :test => :environment do
+    company_data_builder = CompanyDataBuilder.new
+    c = Company.find(1)
+    puts "Building #{c.name}"
+    data = company_data_builder.run(c)
+    Tweeter.send_tweet(c, data)
+    # ChartGenerator.build_company_chart(data)
   end
 
   task :update_short_tracker, :date do |t, args|
@@ -126,9 +137,19 @@ namespace :fi do
   def upload_companies(uploader, relevant_positions, relevant_posts)
     company_data_builder = CompanyDataBuilder.new
     company_ids = relevant_positions.map(&:company_id) + relevant_posts.map(&:company_id)
-    Company.where(id: company_ids).includes(:positions).each do |c|
+    companies = Company.where(id: company_ids).includes(:positions)
+    companies.each do |c|
       puts "Building #{c.name}"
-      uploader.run(company_data_builder.run(c), "#{API_PATH}/stocks/#{c.key}.json")
+      data = company_data_builder.run(c)
+      begin
+        Tweeter.send_tweet(c, data)
+      rescue
+      end
+      uploader.run(data, "#{API_PATH}/stocks/#{c.key}.json")
+    end
+    begin
+      Tweeter.send_summary(companies)
+    rescue
     end
   end
 
