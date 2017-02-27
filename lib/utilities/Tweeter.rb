@@ -27,7 +27,7 @@ class Tweeter
   end
 
   def self.company_tweet_text(company)
-    "Changes in #{ticker(company)}. Total short: #{company.total}\% http://kortapositioner.se/stock/#{company.key} #blankning#{company.ticker ? " \##{company.ticker}" : ''}"
+    "Changes in #{ticker(company)}. Total short: #{company.total.round(2)}\% http://kortapositioner.se/stock/#{company.key} #blankning#{company.ticker ? " \##{company.ticker}" : ''}"
   end
 
   def self.ticker(company)
