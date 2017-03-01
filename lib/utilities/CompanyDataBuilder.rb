@@ -8,6 +8,16 @@ class CompanyDataBuilder
     }
   end
 
+  def build_company_total_positions(company)
+    build_company_positions(company).values.inject([]) do |res, actor|
+      actor[:positions].values.each_with_index do |val, i|
+        res[i] = 0 unless res[i]
+        res[i] += val
+      end
+      res
+    end
+  end
+
   private
 
   def build_company_history(company)

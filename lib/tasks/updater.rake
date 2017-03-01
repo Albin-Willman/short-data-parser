@@ -33,13 +33,19 @@ namespace :fi do
     end
   end
 
-  task :test => :environment do
+  task :tweet_company , [:key] => [:environment] do |t, args|
+
     company_data_builder = CompanyDataBuilder.new
-    c = Company.find(1)
-    puts "Building #{c.name}"
-    data = company_data_builder.run(c)
+    c = Company.find_by(key: args[:key])
+
+    unless c
+      puts "No company found"
+      return
+    end
+
+    puts "Tweeting about #{c.name}"
+    data = company_data_builder.build_company_total_positions(c)
     Tweeter.send_tweet(c, data)
-    # ChartGenerator.build_company_chart(data)
   end
 
   task :update_short_tracker, :date do |t, args|
@@ -140,12 +146,11 @@ namespace :fi do
     companies = Company.where(id: company_ids).includes(:positions)
     companies.each do |c|
       puts "Building #{c.name}"
-      data = company_data_builder.run(c)
       begin
-        Tweeter.send_tweet(c, data)
+        Tweeter.send_tweet(c, company_data_builder.build_company_total_positions(c))
       rescue
       end
-      uploader.run(data, "#{API_PATH}/stocks/#{c.key}.json")
+      uploader.run(company_data_builder.run(c), "#{API_PATH}/stocks/#{c.key}.json")
     end
     begin
       Tweeter.send_summary(companies)

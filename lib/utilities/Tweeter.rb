@@ -3,7 +3,7 @@ require_relative "../utilities/ChartGenerator.rb"
 
 class Tweeter
   def self.send_tweet(company, data)
-    file_name = ChartGenerator.build_company_chart(data)
+    file_name = ChartGenerator.build_company_chart(company.name, data)
     begin
       client.update_with_media(company_tweet_text(company), File.new(file_name))
     rescue
