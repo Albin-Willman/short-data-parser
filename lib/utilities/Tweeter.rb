@@ -4,8 +4,11 @@ require_relative "../utilities/ChartGenerator.rb"
 class Tweeter
   def self.send_tweet(company, data)
     file_name = ChartGenerator.build_company_chart(data)
-
-    client.update_with_media(company_tweet_text(company), File.new(file_name))
+    begin
+      client.update_with_media(company_tweet_text(company), File.new(file_name))
+    rescue
+      client.update(company_tweet_text(company))
+    end
   end
 
   def self.send_summary(companies)

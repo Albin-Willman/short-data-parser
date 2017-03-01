@@ -12,8 +12,8 @@ require_relative "../utilities/StockIndexBuilder.rb"
 require_relative "../utilities/ActorIndexBuilder.rb"
 require_relative "../utilities/CompanyDataBuilder.rb"
 require_relative "../utilities/ActorDataBuilder.rb"
-require_relative "../utilities/ChartGenerator.rb"
 require_relative "../utilities/Tweeter.rb"
+
 
 XLS_PATH = 'tmp/data'
 API_PATH = 'api/v2'
