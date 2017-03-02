@@ -17,6 +17,7 @@ require_relative "../utilities/Tweeter.rb"
 
 XLS_PATH = 'tmp/data'
 API_PATH = 'api/v2'
+TIME_BETWEEN_TWEETS = 5
 namespace :fi do
 
   task :update_short_tracker_and_notify, :date do |t, args|
@@ -101,12 +102,13 @@ namespace :fi do
     relevant_posts = BlogPost.where("created_at > ?", last_deploy)
 
     uploader.run(StockIndexBuilder.new.run, "#{API_PATH}/stocks.json")
-    upload_companies(uploader, relevant_positions, relevant_posts)
+    tweets = upload_companies(uploader, relevant_positions, relevant_posts)
     uploader.run(ActorIndexBuilder.new.run, "#{API_PATH}/actors.json")
     upload_actors(uploader, relevant_positions)
     deploy = SystemEvent.new
     deploy.deploy!
     deploy.save!
+    send_tweets(tweets)
     puts 'Done updating s3'
   end
 
@@ -144,17 +146,26 @@ namespace :fi do
     company_data_builder = CompanyDataBuilder.new
     company_ids = relevant_positions.map(&:company_id) + relevant_posts.map(&:company_id)
     companies = Company.where(id: company_ids).includes(:positions)
+    tweets = []
     companies.each do |c|
       puts "Building #{c.name}"
-      begin
-        Tweeter.send_tweet(c, company_data_builder.build_company_total_positions(c))
-      rescue
-      end
+      tweets << [c, company_data_builder.build_company_total_positions(c)]
       uploader.run(company_data_builder.run(c), "#{API_PATH}/stocks/#{c.key}.json")
     end
+    tweets
+  end
+
+  def send_tweets(tweets)
     begin
-      Tweeter.send_summary(companies)
+      Tweeter.send_summary(tweets.map(&:first))
     rescue
+    end
+    tweets.each do |tweet|
+      begin
+        sleep TIME_BETWEEN_TWEETS
+        Tweeter.send_tweet(tweet[0], tweet[1])
+      rescue
+      end
     end
   end
 
