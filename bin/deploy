@@ -10,8 +10,8 @@ curl -X POST -d \
   \"deployment\": {
    \"commit_sha\": \"$COMMIT\",
    \"server\": \"prod\",
-   \"application\": \"Short tracker\",
-   \"repository_name\": \"short-tracker\",
+   \"application\": \"FI updater\",
+   \"repository_name\": \"short-data-parser\",
    \"tag\": \"$TAG\",
    \"ip_address\": \"\"
   }
