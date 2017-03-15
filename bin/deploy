@@ -1,0 +1,20 @@
+#!/bin/bash
+
+git push heroku master
+
+COMMIT=`git rev-parse HEAD`
+TAG=`git describe --abbrev=0 --tags`
+
+curl -X POST -d \
+"{
+  \"deployment\": {
+   \"commit_sha\": \"$COMMIT\",
+   \"server\": \"prod\",
+   \"application\": \"Short tracker\",
+   \"repository_name\": \"short-tracker\",
+   \"tag\": \"$TAG\",
+   \"ip_address\": \"\"
+  }
+}" https://short-tracker-tracker.herokuapp.com/new_deployment \
+  --header "Authorization: Token token=$META_SECRET" \
+  --header "Content-Type:application/json"
