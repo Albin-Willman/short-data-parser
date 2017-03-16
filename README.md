@@ -1,24 +1,32 @@
-# README
+# Short data parser
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This is a small project with the aim of fetching, parseing and deploying data from the swedish Finans Inspektionen.
 
-Things you may want to cover:
+The data is deployed to [kortapositioner.se](http://kortapositioner.se)
 
-* Ruby version
+## Setup
 
-* System dependencies
+This is no web app, just a couple of jobs that run according to a schedule. To run the entire suite of jobs use:
 
-* Configuration
+```
+rails fi:update_short_tracker_full['date of last document on FI']
+```
 
-* Database creation
+In order for this to work you need to setup a few tokens and secrets:
 
-* Database initialization
 
-* How to run the test suite
+### For deploys to work
+```
+AWS_ACCESS_KEY_ID
+AWS_BUCKET
+AWS_REGION
+AWS_SECRET_ACCESS_KEY
+```
 
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+### For Twitter to work
+```
+TWITTER_ACCESS_TOKEN
+TWITTER_ACCESS_TOKEN_SECRET
+TWITTER_CONSUMER_KEY
+TWITTER_CONSUMER_SECRET
+```
