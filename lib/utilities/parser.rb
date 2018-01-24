@@ -93,6 +93,8 @@ class XlsParser
       return 'teliasonera'
     when 'dios'
       return 'diös'
+    when 'mycronics'
+      return 'mycronic'
     else
       return company
     end
